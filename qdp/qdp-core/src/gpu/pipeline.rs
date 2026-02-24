@@ -547,3 +547,17 @@ where
 
     Ok(())
 }
+
+#[cfg(not(target_os = "linux"))]
+pub fn run_dual_stream_pipeline<F>(
+    _device: &Arc<CudaDevice>,
+    _host_data: &[f64],
+    _kernel_launcher: F,
+) -> Result<()>
+where
+    F: FnMut(&CudaStream, *const f64, usize, usize) -> Result<()>,
+{
+    Err(MahoutError::Cuda(
+        "Dual-stream pipeline requires CUDA (Linux only)".to_string(),
+    ))
+}
