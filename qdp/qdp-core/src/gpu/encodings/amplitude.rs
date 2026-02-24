@@ -26,7 +26,7 @@ use super::QuantumEncoder;
 #[cfg(target_os = "linux")]
 use crate::error::cuda_error_to_string;
 use crate::error::{MahoutError, Result};
-use crate::gpu::memory::{GpuStateVector, Precision};
+use crate::gpu::memory::GpuStateVector;
 #[cfg(target_os = "linux")]
 use crate::gpu::pipeline::run_dual_stream_pipeline;
 use cudarc::driver::CudaDevice;
@@ -64,7 +64,7 @@ impl QuantumEncoder for AmplitudeEncoder {
     ) -> Result<GpuStateVector> {
         // Validate qubits using Preprocessor (which uses validate_qubit_count internally)
         Preprocessor::validate_input(host_data, num_qubits)?;
-        let state_len = 1 << num_qubits;
+        let _state_len = 1 << num_qubits;
 
         #[cfg(target_os = "linux")]
         {

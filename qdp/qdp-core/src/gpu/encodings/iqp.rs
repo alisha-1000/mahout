@@ -73,7 +73,7 @@ impl QuantumEncoder for IqpEncoder {
         num_qubits: usize,
     ) -> Result<GpuStateVector> {
         self.validate_input(data, num_qubits)?;
-        let state_len = 1 << num_qubits;
+        let _state_len = 1 << num_qubits;
 
         #[cfg(target_os = "linux")]
         {

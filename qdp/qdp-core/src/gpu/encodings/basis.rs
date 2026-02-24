@@ -24,7 +24,7 @@ use super::{QuantumEncoder, validate_qubit_count};
 #[cfg(target_os = "linux")]
 use crate::error::cuda_error_to_string;
 use crate::error::{MahoutError, Result};
-use crate::gpu::memory::{GpuStateVector, Precision};
+use crate::gpu::memory::GpuStateVector;
 use cudarc::driver::CudaDevice;
 use std::sync::Arc;
 
@@ -67,7 +67,7 @@ impl QuantumEncoder for BasisEncoder {
             )));
         }
 
-        let state_len = 1 << num_qubits;
+        let _state_len = 1 << num_qubits;
 
         #[cfg(target_os = "linux")]
         {

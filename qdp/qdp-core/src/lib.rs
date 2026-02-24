@@ -48,7 +48,6 @@ pub use pipeline_runner::{
     run_throughput_pipeline,
 };
 
-use std::ffi::c_void;
 use std::sync::Arc;
 
 use crate::dlpack::DLManagedTensor;

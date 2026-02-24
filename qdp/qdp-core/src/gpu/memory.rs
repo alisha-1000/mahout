@@ -345,7 +345,7 @@ impl GpuStateVector {
     /// Allocates num_samples * 2^qubits complex numbers on GPU
     pub fn new_batch(_device: &Arc<CudaDevice>, num_samples: usize, qubits: usize) -> Result<Self> {
         let single_state_size: usize = 1usize << qubits;
-        let total_elements = num_samples.checked_mul(single_state_size).ok_or_else(|| {
+        let _total_elements = num_samples.checked_mul(single_state_size).ok_or_else(|| {
             MahoutError::MemoryAllocation(format!(
                 "Batch size overflow: {} samples * {} elements",
                 num_samples, single_state_size
@@ -401,7 +401,7 @@ impl GpuStateVector {
     /// Convert the state vector to the requested precision (GPU-side).
     ///
     /// Supports Float64 -> Float32 and Float32 -> Float64.
-    pub fn to_precision(&self, device: &Arc<CudaDevice>, target: Precision) -> Result<Self> {
+    pub fn to_precision(&self, _device: &Arc<CudaDevice>, target: Precision) -> Result<Self> {
         if self.precision() == target {
             return Ok(self.clone());
         }

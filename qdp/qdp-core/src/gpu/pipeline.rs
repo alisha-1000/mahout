@@ -39,8 +39,7 @@ use crate::gpu::memory::{ensure_device_memory_available, map_allocation_error};
 use crate::gpu::overlap_tracker::OverlapTracker;
 #[cfg(target_os = "linux")]
 use crate::gpu::pool_metrics::PoolMetrics;
-use cudarc::driver::{CudaDevice, CudaSlice, DevicePtr, safe::CudaStream};
-use std::ffi::c_void;
+use cudarc::driver::{CudaDevice, safe::CudaStream};
 use std::sync::Arc;
 
 /// Dual-stream context coordinating copy/compute with an event.
