@@ -40,6 +40,8 @@ tch = "0.22"
 # Optional: vendored protoc to avoid build failures when protoc is missing
 protoc-bin-vendored = "3"
 
+num-complex = "0.4"
+
 # Release profile optimizations
 [profile.release]
 opt-level = 3          # Maximum optimization

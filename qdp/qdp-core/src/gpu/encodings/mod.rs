@@ -141,6 +141,7 @@ pub mod amplitude;
 pub mod angle;
 pub mod basis;
 pub mod iqp;
+pub mod zzfeaturemap;
 
 pub use amplitude::AmplitudeEncoder;
 pub use angle::AngleEncoder;

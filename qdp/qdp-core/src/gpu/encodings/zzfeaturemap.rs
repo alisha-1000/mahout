@@ -17,10 +17,12 @@
 use super::QuantumEncoder;
 
 use crate::error::{MahoutError, Result};
-use crate::gpu::memory::{GpuStateVector};
+use crate::gpu::memory::GpuStateVector;
 
 use cudarc::driver::CudaDevice;
 use std::sync::Arc;
+
+use num_complex::Complex64;
 
 /// Entanglement pattern for ZZFeatureMap
 #[derive(Clone, Copy)]
@@ -31,11 +33,6 @@ pub enum Entanglement {
 }
 
 /// ZZFeatureMap encoder (POC)
-///
-/// Applies:
-/// - Hadamards (assumed in kernel)
-/// - Z rotations based on input features
-/// - ZZ interactions based on linear entanglement
 pub struct ZZFeatureMap {
     entanglement: Entanglement,
 }
@@ -49,17 +46,54 @@ impl ZZFeatureMap {
         }
     }
 
-    /// Expected number of input parameters
-    ///
-    /// For basic ZZFeatureMap (linear):
-    /// one feature per qubit
     fn expected_data_len(&self, num_qubits: usize) -> usize {
         num_qubits
+    }
+
+    /// CPU reference implementation for validation
+    pub fn cpu_reference_state(
+        &self,
+        data: &[f64],
+        num_qubits: usize,
+    ) -> Vec<Complex64> {
+        let dim = 1 << num_qubits;
+        let norm = 1.0 / (dim as f64).sqrt();
+
+        let mut state = vec![Complex64::new(norm, 0.0); dim];
+
+        for basis in 0..dim {
+            let mut phase = 0.0;
+
+            // Single-qubit Z rotations
+            for q in 0..num_qubits {
+                let bit = (basis >> q) & 1;
+                let sign = if bit == 0 { -1.0 } else { 1.0 };
+                phase += sign * data[q];
+            }
+
+            // Linear ZZ interactions
+            if num_qubits > 1 {
+                for q in 0..(num_qubits - 1) {
+                    let bit_i = (basis >> q) & 1;
+                    let bit_j = (basis >> (q + 1)) & 1;
+
+                    let zi = if bit_i == 0 { 1.0 } else { -1.0 };
+                    let zj = if bit_j == 0 { 1.0 } else { -1.0 };
+
+                    phase += zi * zj * data[q] * data[q + 1];
+                }
+            }
+
+            let complex_phase = Complex64::from_polar(1.0, phase);
+            state[basis] *= complex_phase;
+        }
+
+        state
     }
 }
 
 impl QuantumEncoder for ZZFeatureMap {
-        fn encode(
+    fn encode(
         &self,
         #[cfg(target_os = "linux")] _device: &Arc<CudaDevice>,
         #[cfg(not(target_os = "linux"))] _device: &Arc<CudaDevice>,
@@ -98,12 +132,10 @@ impl QuantumEncoder for ZZFeatureMap {
             )));
         }
 
-        let expected_len = self.expected_data_len(num_qubits);
-
-        if data.len() != expected_len {
+        if data.len() != self.expected_data_len(num_qubits) {
             return Err(MahoutError::InvalidInput(format!(
                 "ZZFeatureMap expects {} values for {} qubits, got {}",
-                expected_len,
+                num_qubits,
                 num_qubits,
                 data.len()
             )));
@@ -127,5 +159,22 @@ impl QuantumEncoder for ZZFeatureMap {
 
     fn description(&self) -> &'static str {
         "ZZFeatureMap encoding with linear entanglement (POC)"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cpu_reference_normalized() {
+        let encoder = ZZFeatureMap::linear();
+        let data = vec![0.5, 1.0];
+        let state = encoder.cpu_reference_state(&data, 2);
+
+        assert_eq!(state.len(), 4);
+
+        let norm: f64 = state.iter().map(|c| c.norm_sqr()).sum();
+        assert!((norm - 1.0).abs() < 1e-10);
     }
 }

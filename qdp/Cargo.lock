@@ -1631,6 +1631,7 @@ dependencies = [
  "log",
  "ndarray 0.16.1",
  "ndarray-npy",
+ "num-complex",
  "nvtx",
  "parquet",
  "prost",
